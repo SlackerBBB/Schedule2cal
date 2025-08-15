@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule2Cal - 时间表导入日历工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --text: #343a40;
+            --gray: #6c757d;
+            --border: #dee2e6;
+            --success: #4cc9f0;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2a5298);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 900px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        header {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            background: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            letter-spacing: -0.5px;
+        }
+        
+        .brand {
+            color: #fff;
+            background: rgba(255,255,255,0.15);
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 15px auto 0;
+            line-height: 1.6;
+            position: relative;
+            font-weight: 300;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+        }
+        
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+        }
+        
+        .output-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 15px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        
+        .section-title {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+        
+        .section-title i {
+            margin-right: 15px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 1.8rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        label i {
+            margin-right: 10px;
+            width: 25px;
+            text-align: center;
+            color: var(--primary);
+        }
+        
+        input[type="date"], select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1.05rem;
+            transition: all 0.3s;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        input[type="date"]:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.2);
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            font-size: 1.05rem;
+            resize: vertical;
+            line-height: 1.6;
+            transition: all 0.3s;
+            background: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.2);
+        }
+        
+        .example {
+            background: rgba(67, 97, 238, 0.05);
+            padding: 18px;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            color: var(--gray);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .example-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            color: var(--secondary);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 17px 30px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 5px 20px rgba(67, 97, 238, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255,255,255,0.15);
+            transform: rotate(30deg);
+            transition: all 0.5s;
+            opacity: 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.6);
+        }
+        
+        .btn:hover::after {
+            opacity: 1;
+        }
+        
+        .btn:active {
+            transform: translateY(-2px);
+        }
+        
+        .btn-download {
+            background: linear-gradient(90deg, #0f9d58 0%, #1e7145 100%);
+            box-shadow: 0 5px 20px rgba(15, 157, 88, 0.4);
+        }
+        
+        .btn-download:hover {
+            box-shadow: 0 10px 25px rgba(15, 157, 88, 0.6);
+        }
+        
+        .event-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .event-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .event-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .event-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+        }
+        
+        .event-item {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07);
+            border-left: 5px solid var(--primary);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+        }
+        
+        .event-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .event-time {
+            flex: 0 0 150px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-right: 20px;
+            font-size: 1.15rem;
+            padding: 5px 0;
+        }
+        
+        .event-title {
+            flex: 1;
+            font-size: 1.15rem;
+            color: var(--text);
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+            border: 1px solid var(--border);
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: var(--gray);
+            font-weight: 600;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: var(--gray);
+            font-size: 1rem;
+            border-top: 1px solid var(--border);
+            background: var(--light);
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .footer-links a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px 25px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            border-left: 5px solid #0f9d58;
+            transform: translateX(150%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            max-width: 400px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification i {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: #0f9d58;
+        }
+        
+        .notification-content h4 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+        
+        .notification-content p {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .input-section, .output-section {
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .event-item {
+                flex-direction: column;
+            }
+            
+            .event-time {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+            }
+            
+            .btn {
+                padding: 15px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div>
+                    <h1>Schedule2Cal</h1>
+                    <div class="brand">由 Slacker 提供技术支持</div>
+                </div>
+            </div>
+            <p class="subtitle">将文本时间表一键转换为可导入日历的事件</p>
+        </header>
+        
+        <div class="content">
+            <div class="input-section">
+                <h2 class="section-title">
+                    <i class="fas fa-edit"></i> 输入时间表
+                </h2>
+                
+                <div class="form-group">
+                    <label for="event-date"><i class="fas fa-calendar-day"></i> 选择日期：</label>
+                    <input type="date" id="event-date">
+                </div>
+                
+                <div class="form-group">
+                    <label for="schedule-text"><i class="fas fa-clock"></i> 时间表内容：</label>
+                    <textarea id="schedule-text" placeholder="请在此处粘贴时间表内容，例如：
+8:00-9:00 会议
+9:30-11:00 项目开发
+13:00-14:00 午餐休息
+14:30-16:00 客户沟通
+18:00-19:30 健身
+20:00-21:30 阅读书籍">8:00-9:00 团队会议
+9:30-11:00 项目开发
+13:00-14:00 午餐休息
+14:30-16:00 客户沟通
+18:00-19:30 健身
+20:00-21:30 阅读书籍</textarea>
+                </div>
+                
+                <div class="example">
+                    <div class="example-title"><i class="fas fa-lightbulb"></i> 格式说明：</div>
+                    <p>每行一个事件，格式为：<strong>开始时间-结束时间 事件描述</strong></p>
+                    <p>支持的时间格式：8:00-9:00 或 08:00-17:00</p>
+                    <p>支持跨天事件（如23:00-01:00）</p>
+                </div>
+                
+                <button id="parse-btn" class="btn"><i class="fas fa-cogs"></i> 解析时间表</button>
+            </div>
+            
+            <div class="output-section">
+                <h2 class="section-title">
+                    <i class="fas fa-calendar-check"></i> 解析结果
+                </h2>
+                
+                <div id="event-list" class="event-list">
+                    <div class="event-item">
+                        <div class="event-time">08:00 - 09:00</div>
+                        <div class="event-title">团队会议</div>
+                    </div>
+                    <div class="event-item">
+                        <div class="event-time">09:30 - 11:00</div>
+                        <div class="event-title">项目开发</div>
+                    </div>
+                    <div class="event-item">
+                        <div class="event-time">13:00 - 14:00</div>
+                        <div class="event-title">午餐休息</div>
+                    </div>
+                    <div class="event-item">
+                        <div class="event-time">14:30 - 16:00</div>
+                        <div class="event-title">客户沟通</div>
+                    </div>
+                    <div class="event-item">
+                        <div class="event-time">18:00 - 19:30</div>
+                        <div class="event-title">健身</div>
+                    </div>
+                    <div class="event-item">
+                        <div class="event-time">20:00 - 21:30</div>
+                        <div class="event-title">阅读书籍</div>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-events">6</div>
+                        <div class="stat-label">总事件</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="duration">9.5</div>
+                        <div class="stat-label">总时长(小时)</div>
+                    </div>
+                </div>
+                
+                <button id="download-btn" class="btn btn-download"><i class="fas fa-download"></i> 下载日历文件 (.ics)</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 Schedule2Cal.com - 专业时间表导入日历工具</p>
+            <div class="footer-links">
+                <a href="#">使用条款</a>
+                <a href="#">隐私政策</a>
+                <a href="#">联系我们</a>
+                <a href="#">Slacker</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <div class="notification-content">
+            <h4>成功添加日历事件</h4>
+            <p>共添加 <span id="event-count">0</span> 条事件</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认日期为今天
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('event-date').value = formattedDate;
+            
+            const parseBtn = document.getElementById('parse-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const eventList = document.getElementById('event-list');
+            const notification = document.getElementById('notification');
+            
+            let events = [];
+            
+            // 初始渲染示例事件
+            const initialText = document.getElementById('schedule-text').value;
+            events = parseSchedule(initialText, formattedDate);
+            renderEvents(events);
+            updateStats(events);
+            
+            parseBtn.addEventListener('click', function() {
+                const scheduleText = document.getElementById('schedule-text').value;
+                const eventDate = document.getElementById('event-date').value;
+                
+                if (!scheduleText.trim()) {
+                    showNotification('请输入时间表内容', true);
+                    return;
+                }
+                
+                if (!eventDate) {
+                    showNotification('请选择日期', true);
+                    return;
+                }
+                
+                // 解析时间表
+                events = parseSchedule(scheduleText, eventDate);
+                
+                if (events.length === 0) {
+                    showNotification('未找到有效事件，请检查格式', true);
+                } else {
+                    showNotification(`成功解析 ${events.length} 个事件`);
+                }
+                
+                // 更新UI
+                renderEvents(events);
+                updateStats(events);
+            });
+            
+            downloadBtn.addEventListener('click', function() {
+                if (events.length === 0) {
+                    showNotification('没有可下载的事件', true);
+                    return;
+                }
+                
+                try {
+                    // 生成ICS文件内容
+                    const icsContent = generateICS(events);
+                    
+                    // 创建下载链接
+                    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Schedule2Cal_${document.getElementById('event-date').value.replace(/-/g, '')}.ics`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    // 显示通知
+                    document.getElementById('event-count').textContent = events.length;
+                    showNotification(`成功导出 ${events.length} 个事件到日历文件`);
+                } catch (error) {
+                    showNotification('生成日历文件失败: ' + error.message, true);
+                    console.error('生成ICS文件错误:', error);
+                }
+            });
+            
+            function parseSchedule(text, date) {
+                const events = [];
+                const lines = text.split('\n');
+                
+                // 正则表达式匹配时间范围
+                const timeRegex = /(\d{1,2}:\d{2})\s*[-—]\s*(\d{1,2}:\d{2})/;
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+                    
+                    // 替换中文冒号为英文冒号
+                    line = line.replace(/：/g, ':');
+                    
+                    const match = line.match(timeRegex);
+                    if (!match) continue;
+                    
+                    const startTime = match[1];
+                    const endTime = match[2];
+                    const description = line.replace(timeRegex, '').trim();
+                    
+                    events.push({
+                        startTime,
+                        endTime,
+                        description,
+                        date
+                    });
+                }
+                
+                return events;
+            }
+            
+            function renderEvents(events) {
+                if (events.length === 0) {
+                    eventList.innerHTML = `
+                        <div class="event-item">
+                            <div class="event-time">未找到事件</div>
+                            <div class="event-title">请检查时间表格式是否正确</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                events.forEach(event => {
+                    html += `
+                        <div class="event-item">
+                            <div class="event-time">${event.startTime} - ${event.endTime}</div>
+                            <div class="event-title">${event.description}</div>
+                        </div>
+                    `;
+                });
+                
+                eventList.innerHTML = html;
+            }
+            
+            function updateStats(events) {
+                document.getElementById('total-events').textContent = events.length;
+                
+                // 计算总时长
+                let totalMinutes = 0;
+                events.forEach(event => {
+                    const [startHour, startMin] = event.startTime.split(':').map(Number);
+                    const [endHour, endMin] = event.endTime.split(':').map(Number);
+                    
+                    const startTotal = startHour * 60 + startMin;
+                    const endTotal = endHour * 60 + endMin;
+                    
+                    // 处理跨天事件
+                    const duration = endTotal >= startTotal ? 
+                        (endTotal - startTotal) : 
+                        (24 * 60 - startTotal + endTotal);
+                    
+                    totalMinutes += duration;
+                });
+                
+                const totalHours = (totalMinutes / 60).toFixed(1);
+                document.getElementById('duration').textContent = totalHours;
+            }
+            
+            function generateICS(events) {
+                let ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Schedule2Cal//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Schedule2Cal
+`;
+                
+                events.forEach((event, index) => {
+                    // 格式化时间 (YYYYMMDDTHHmmss)
+                    const formatTime = (dateStr, timeStr) => {
+                        const [hours, minutes] = timeStr.split(':');
+                        const date = new Date(dateStr);
+                        date.setHours(parseInt(hours, 10));
+                        date.setMinutes(parseInt(minutes, 10));
+                        
+                        // 处理跨天事件（结束时间小于开始时间）
+                        if (index > 0) {
+                            const prevEvent = events[index - 1];
+                            if (timeStr < prevEvent.startTime) {
+                                date.setDate(date.getDate() + 1);
+                            }
+                        }
+                        
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hour = String(date.getHours()).padStart(2, '0');
+                        const minute = String(date.getMinutes()).padStart(2, '0');
+                        
+                        return `${year}${month}${day}T${hour}${minute}00`;
+                    };
+                    
+                    const startDateTime = formatTime(event.date, event.startTime);
+                    const endDateTime = formatTime(event.date, event.endTime);
+                    
+                    // 创建唯一ID
+                    const uid = `${Date.now()}-${index}@schedule2cal`;
+                    
+                    // 添加事件
+                    ics += `BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${formatTime(new Date().toISOString().split('T')[0], '000000')}
+DTSTART:${startDateTime}
+DTEND:${endDateTime}
+SUMMARY:${event.description}
+DESCRIPTION:由Schedule2Cal生成
+LOCATION:
+END:VEVENT
+`;
+                });
+                
+                ics += `END:VCALENDAR`;
+                
+                return ics;
+            }
+            
+            function showNotification(message, isError = false) {
+                const notification = document.getElementById('notification');
+                const content = notification.querySelector('.notification-content p');
+                
+                if (isError) {
+                    notification.style.borderLeftColor = '#e53935';
+                    notification.querySelector('i').style.color = '#e53935';
+                    notification.querySelector('i').className = 'fas fa-exclamation-circle';
+                    notification.querySelector('h4').textContent = '操作失败';
+                } else {
+                    notification.style.borderLeftColor = '#0f9d58';
+                    notification.querySelector('i').style.color = '#0f9d58';
+                    notification.querySelector('i').className = 'fas fa-check-circle';
+                    notification.querySelector('h4').textContent = '操作成功';
+                }
+                
+                content.textContent = message;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
